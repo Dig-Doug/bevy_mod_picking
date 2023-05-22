@@ -1,5 +1,6 @@
 use crate::{Hover, PickableMesh, Selection};
 use bevy::prelude::*;
+use bevy_mod_raycast::IntersectionData;
 
 /// An event that triggers when the selection state of a [Selection] enabled [PickableMesh] changes.
 #[derive(Debug)]
@@ -11,7 +12,8 @@ pub enum SelectionEvent {
 /// An event that triggers when the hover state of a [Hover] enabled [PickableMesh] changes.
 #[derive(Debug)]
 pub enum HoverEvent {
-    JustEntered(Entity),
+    JustEntered{entity: Entity, intersection: IntersectionData},
+    HoverOver{entity: Entity, intersection: IntersectionData},
     JustLeft(Entity),
 }
 
@@ -20,7 +22,7 @@ pub enum HoverEvent {
 pub enum PickingEvent {
     Selection(SelectionEvent),
     Hover(HoverEvent),
-    Clicked(Entity),
+    Clicked{entity: Entity, intersection: IntersectionData},
 }
 
 /// Looks for changes in selection or hover state, and sends the appropriate events
@@ -37,8 +39,12 @@ pub fn mesh_events_system(
         if hover.is_added() {
             continue; // Avoid a false change detection when a component is added.
         }
-        if hover.hovered() {
-            picking_events.send(PickingEvent::Hover(HoverEvent::JustEntered(entity)));
+        if let Some(intersection) = hover.intersection.clone() {
+            if hover.last_intersection.is_none() {
+                picking_events.send(PickingEvent::Hover(HoverEvent::JustEntered{entity, intersection}));
+            } else {
+                picking_events.send(PickingEvent::Hover(HoverEvent::HoverOver{entity, intersection}));
+            }
         } else {
             picking_events.send(PickingEvent::Hover(HoverEvent::JustLeft(entity)));
         }
@@ -61,8 +67,8 @@ pub fn mesh_events_system(
         || touches_input.iter_just_pressed().next().is_some()
     {
         for (entity, hover) in click_query.iter() {
-            if hover.hovered() {
-                picking_events.send(PickingEvent::Clicked(entity));
+            if let Some(intersection) = &hover.intersection {
+                picking_events.send(PickingEvent::Clicked{entity, intersection: intersection.clone() });
             }
         }
     }

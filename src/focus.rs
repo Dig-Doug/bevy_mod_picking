@@ -1,20 +1,24 @@
-use crate::{PausedForBlockers, PickableMesh, PickingCamera};
+use crate::{PausedForBlockers, PickableMesh, PickingCamera, PickingRaycastSet};
 use bevy::{prelude::*, ui::FocusPolicy};
+use bevy_mod_raycast::{IntersectionData};
 
 /// Tracks the current hover state to be used with change tracking in the events system.
 ///
 /// # Requirements
 ///
 /// An entity with the `Hover` component must also have an [Interaction] component.
-#[derive(Component, Debug, Default, Copy, Clone, Reflect)]
+#[derive(Component, Debug, Default, Clone, Reflect, PartialEq)]
 #[reflect(Component, Default)]
 pub struct Hover {
-    hovered: bool,
+    #[reflect(ignore)]
+    pub(crate) intersection: Option<IntersectionData>,
+    #[reflect(ignore)]
+    pub(crate) last_intersection: Option<IntersectionData>,
 }
 
 impl Hover {
     pub fn hovered(&self) -> bool {
-        self.hovered
+        self.intersection.is_some()
     }
 }
 
@@ -50,8 +54,8 @@ pub fn pause_for_picking_blockers(
                     *interaction = Interaction::None;
                 }
                 if let Some(mut hover) = hover {
-                    if hover.hovered {
-                        hover.hovered = false;
+                    if hover.hovered() {
+                        hover.intersection = None;
                     }
                 }
             }
@@ -84,6 +88,7 @@ pub fn mesh_focus(
     }
 
     let mut hovered_entity = None;
+    let mut hovered_intersection = None;
 
     if mouse_button_input.just_released(MouseButton::Left)
         || touches_input.iter_just_released().next().is_some()
@@ -111,6 +116,7 @@ pub fn mesh_focus(
                 }
 
                 hovered_entity = Some(*topmost_entity);
+                hovered_intersection = Some(_intersection);
 
                 match focus_policy.cloned().unwrap_or(FocusPolicy::Block) {
                     FocusPolicy::Block => {
@@ -122,18 +128,26 @@ pub fn mesh_focus(
         }
 
         for (mut interaction, hover, _, entity) in &mut interactions.iter_mut() {
-            if Some(entity) != hovered_entity && *interaction == Interaction::Hovered {
+            let is_hovered_entity = Some(entity) == hovered_entity;
+            if !is_hovered_entity && *interaction == Interaction::Hovered {
                 *interaction = Interaction::None;
             }
-            if Some(entity) == hovered_entity {
-                if let Some(mut hover) = hover {
-                    if !hover.hovered {
-                        hover.hovered = true;
+          
+            if let Some(mut hover) = hover {
+                let new_state = Hover {
+                    last_intersection:  if is_hovered_entity {
+                        hover.intersection.clone()
+                    } else {
+                        None
+                    },
+                    intersection: if is_hovered_entity {
+                        hovered_intersection.cloned()
+                    } else {
+                        None
                     }
-                }
-            } else if let Some(mut hover) = hover {
-                if hover.hovered {
-                    hover.hovered = false;
+                };
+                if new_state != *hover {
+                    *hover = new_state;
                 }
             }
         }

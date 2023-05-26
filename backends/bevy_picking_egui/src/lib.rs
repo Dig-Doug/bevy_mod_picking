@@ -81,6 +81,7 @@ pub fn egui_picking(
                             depth: 0.0,
                             position: None,
                             normal: None,
+                            indices: None,
                         },
                     );
 

@@ -79,4 +79,6 @@ pub struct HitData {
     pub position: Option<Vec3>,
     /// The normal vector of the hit test, if the data is available from the backend.
     pub normal: Option<Vec3>,
+    /// The indices of the triangle hit, if available from the backend.
+    pub indices: Option<UVec3>,
 }

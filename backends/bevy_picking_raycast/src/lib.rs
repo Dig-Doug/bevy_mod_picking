@@ -181,6 +181,7 @@ fn update_hits(
                             depth: intersection.distance(),
                             position: Some(intersection.position()),
                             normal: Some(intersection.normal()),
+                            indices: intersection.triangle().and_then(|t| t.indices),
                         },
                     )
                 })

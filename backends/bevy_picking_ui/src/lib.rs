@@ -98,6 +98,7 @@ pub fn ui_picking(
                         depth: position.z,
                         position: None,
                         normal: None,
+                      indices: None,
                     },
                 ))
             })

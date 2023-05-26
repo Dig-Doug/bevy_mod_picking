@@ -98,3 +98,7 @@ required-features = ["backend_egui"]
 name = "virtual_pointer"
 path = "examples/virtual_pointer.rs"
 required-features = ["backend_egui"]
+
+[patch.crates-io]
+bevy_mod_raycast = { path = "/home/doug/Development/thirdparty/bevy_mod_raycast" }
+bevy = {git = "https://github.com/Dig-Doug/bevy", branch = "winit-fix"}

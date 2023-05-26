@@ -117,6 +117,7 @@ fn update_hits(
                 depth: intersection.toi,
                 position: Some(intersection.point),
                 normal: Some(intersection.normal),
+                indices: None,
             };
             output.send(PointerHits {
                 pointer: pointer,

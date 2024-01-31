@@ -125,7 +125,7 @@ pub fn sprite_picking(
 
                 is_cursor_in_sprite.then_some((
                     entity,
-                    HitData::new(cam_entity, sprite_transform.translation().z, None, None),
+                    HitData::new(cam_entity, sprite_transform.translation().z, None, None, None),
                 ))
             })
             .collect();

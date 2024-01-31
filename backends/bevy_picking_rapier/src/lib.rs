@@ -25,6 +25,7 @@
 #![allow(clippy::too_many_arguments)]
 #![deny(missing_docs)]
 
+use std::sync::Arc;
 use bevy_app::prelude::*;
 use bevy_ecs::prelude::*;
 use bevy_reflect::{std_traits::ReflectDefault, Reflect};
@@ -140,7 +141,7 @@ pub fn update_hits(
                 )
                 .map(|(entity, hit)| {
                     let hit_data =
-                        HitData::new(cam_entity, hit.toi, Some(hit.point), Some(hit.normal));
+                        HitData::new(cam_entity, hit.toi, Some(hit.point), Some(hit.normal), Some(Arc::new(hit)));
                     (entity, hit_data)
                 })
             {

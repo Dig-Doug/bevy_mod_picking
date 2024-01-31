@@ -14,6 +14,7 @@
 #![allow(clippy::too_many_arguments, clippy::type_complexity)]
 #![deny(missing_docs)]
 
+use std::sync::Arc;
 use bevy_app::prelude::*;
 use bevy_ecs::prelude::*;
 use bevy_reflect::prelude::*;
@@ -130,6 +131,7 @@ pub fn update_hits(
                         hit.distance(),
                         Some(hit.position()),
                         Some(hit.normal()),
+                        Some(Arc::new(hit.clone())),
                     );
                     (*entity, hit_data)
                 })

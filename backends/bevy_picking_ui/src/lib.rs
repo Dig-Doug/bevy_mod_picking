@@ -157,7 +157,7 @@ pub fn ui_picking(
 
         while let Some(node) = iter.fetch_next() {
             let mut push_hit =
-                || picks.push((node.entity, HitData::new(*camera_entity, depth, None, None)));
+                || picks.push((node.entity, HitData::new(*camera_entity, depth, None, None, None)));
             push_hit();
             if let Some(pickable) = node.pickable {
                 // If an entity has a `Pickable` component, we will use that as the source of truth.

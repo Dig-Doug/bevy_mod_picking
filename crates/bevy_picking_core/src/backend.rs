@@ -22,6 +22,8 @@
 //!   may want to early exit if it intersects an entity that blocks lower entities from being
 //!   picked.
 
+use std::any::Any;
+use std::sync::Arc;
 use bevy_ecs::prelude::*;
 use bevy_math::Vec3;
 use bevy_reflect::Reflect;
@@ -83,7 +85,7 @@ impl PointerHits {
 ///
 /// `depth` only needs to be self-consistent with other [`PointerHits`]s using the same
 /// [`RenderTarget`](bevy_render::camera::RenderTarget).
-#[derive(Clone, Debug, PartialEq, Reflect)]
+#[derive(Clone, Debug, Reflect)]
 pub struct HitData {
     /// The camera entity used to detect this hit. Useful when you need to find the ray that was
     /// casted for this hit when using a raycasting backend.
@@ -94,16 +96,29 @@ pub struct HitData {
     pub position: Option<Vec3>,
     /// The normal vector of the hit test, if the data is available from the backend.
     pub normal: Option<Vec3>,
+    /// Raw intersection data exposed by the backend
+    #[reflect(ignore)]
+    pub backend_intersection_data: Option<Arc<dyn Any + Send + Sync>>,
+}
+
+impl PartialEq for HitData {
+    fn eq(&self, other: &Self) -> bool {
+        self.camera == other.camera
+            && self.depth == other.depth
+            && self.position == other.position
+            && self.normal == other.normal
+    }
 }
 
 impl HitData {
     #[allow(missing_docs)]
-    pub fn new(camera: Entity, depth: f32, position: Option<Vec3>, normal: Option<Vec3>) -> Self {
+    pub fn new(camera: Entity, depth: f32, position: Option<Vec3>, normal: Option<Vec3>, backend_intersection_data: Option<Arc<dyn Any + Send + Sync>>) -> Self {
         Self {
             camera,
             depth,
             position,
             normal,
+            backend_intersection_data,
         }
     }
 }
